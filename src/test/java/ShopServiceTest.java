@@ -1,7 +1,11 @@
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,16 +16,17 @@ class ShopServiceTest {
         //GIVEN
         ShopService shopService = new ShopService();
         List<String> productsIds = List.of("1");
+        Instant bestellDatum = LocalDateTime.now().toLocalDate().atStartOfDay(ZoneId.of("Europe/Berlin")).toInstant();
         //WHEN
         Order actual = null;
         try {
             actual = shopService.addOrder(productsIds);
         }
         //THEN
-        catch (InvalidProductException ipe){
+        catch (InvalidProductException ipe) {
             fail("Unexpected InvalidProductException");
         }
-        Order expected = new Order("-1", BestellStatus.PROCESSING, List.of(new Product("1", "Apfel")));
+        Order expected = new Order("-1", BestellStatus.PROCESSING, List.of(new Product("1", "Apfel")), bestellDatum);
         assertEquals(expected.products(), actual.products());
         assertNotNull(expected.id());
         assertEquals(BestellStatus.PROCESSING, actual.bestellStatus());
@@ -38,7 +43,7 @@ class ShopServiceTest {
             fail("Expected InvalidProductException");
         } catch (InvalidProductException e) {
             //THEN
-           assertThrows(InvalidProductException.class, () -> {
+            assertThrows(InvalidProductException.class, () -> {
                 shopService.addOrder(productsIds);
             });
             assertEquals("Product Id: 2", e.getMessage());
@@ -62,14 +67,32 @@ class ShopServiceTest {
         List<String> productsIds = List.of("1");
         List<Order> actual = null;
         try {
-        shopService.addOrder(productsIds);
-        //WHEN
+            shopService.addOrder(productsIds);
+            //WHEN
             actual = shopService.getAllOrdersByOrderState(BestellStatus.PROCESSING);
         }
         //THEN
-        catch (InvalidProductException ipe){
+        catch (InvalidProductException ipe) {
             fail("Unexpected InvalidProductException");
         }
         assertEquals(BestellStatus.PROCESSING, actual.getFirst().bestellStatus());
+    }
+
+    @Test
+    void updateOrder() {
+        //GIVEN
+        ShopService shopService = new ShopService();
+        List<String> productsIds = List.of("1");
+        Optional<Order> actual = null;
+        try {
+            Order order = shopService.addOrder(productsIds);
+            //WHEN
+            actual = shopService.updateOrder(BestellStatus.IN_DELIVERY, order.id());
+        }
+        //THEN
+        catch (InvalidProductException ipe) {
+            fail("Unexpected InvalidProductException");
+        }
+        assertEquals(BestellStatus.IN_DELIVERY, actual.get().bestellStatus());
     }
 }

@@ -1,0 +1,1 @@
+[![Java CI with Maven](https://github.com/IrinaAntonova0/java-recap-project-objektorientierung-ShopService/actions/workflows/maven.yml/badge.svg)](https://github.com/IrinaAntonova0/java-recap-project-objektorientierung-ShopService/actions/workflows/maven.yml)

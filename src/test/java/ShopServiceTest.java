@@ -12,11 +12,15 @@ class ShopServiceTest {
         //GIVEN
         ShopService shopService = new ShopService();
         List<String> productsIds = List.of("1");
-
         //WHEN
-        Order actual = shopService.addOrder(productsIds);
-
+        Order actual = null;
+        try {
+            actual = shopService.addOrder(productsIds);
+        }
         //THEN
+        catch (InvalidProductException ipe){
+            fail("Unexpected InvalidProductException");
+        }
         Order expected = new Order("-1", BestellStatus.PROCESSING, List.of(new Product("1", "Apfel")));
         assertEquals(expected.products(), actual.products());
         assertNotNull(expected.id());
@@ -24,16 +28,21 @@ class ShopServiceTest {
     }
 
     @Test
-    void addOrderTest_whenInvalidProductId_expectNull() {
+    void addOrderTest_whenInvalidProductId_expectException() {
         //GIVEN
         ShopService shopService = new ShopService();
         List<String> productsIds = List.of("1", "2");
-
         //WHEN
-        Order actual = shopService.addOrder(productsIds);
-
-        //THEN
-        assertNull(actual);
+        try {
+            shopService.addOrder(productsIds);
+            fail("Expected InvalidProductException");
+        } catch (InvalidProductException e) {
+            //THEN
+           assertThrows(InvalidProductException.class, () -> {
+                shopService.addOrder(productsIds);
+            });
+            assertEquals("Product Id: 2", e.getMessage());
+        }
     }
 
     @Test
@@ -51,11 +60,16 @@ class ShopServiceTest {
         //GIVEN
         ShopService shopService = new ShopService();
         List<String> productsIds = List.of("1");
+        List<Order> actual = null;
+        try {
         shopService.addOrder(productsIds);
-
         //WHEN
-        List<Order> actual = shopService.getAllOrdersByOrderState(BestellStatus.PROCESSING);
+            actual = shopService.getAllOrdersByOrderState(BestellStatus.PROCESSING);
+        }
         //THEN
+        catch (InvalidProductException ipe){
+            fail("Unexpected InvalidProductException");
+        }
         assertEquals(BestellStatus.PROCESSING, actual.getFirst().bestellStatus());
     }
 }
